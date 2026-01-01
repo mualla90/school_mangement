@@ -3,17 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Teacher;
+use App\Services\Teacher\TeacherServices;
 use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
+    protected TeacherServices $teacherServices;
+    public function __construct(TeacherServices $teacherServices){
+        $this->teacherServices=$teacherServices;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $teachers=Teacher::query()->get();
-        return $this->successResponse($teachers,'All teachers');
+        return $this->successResponse($this->teacherServices->getAllTeachers(),'All teachers');
     }
 
     /**
@@ -29,9 +33,7 @@ class TeacherController extends Controller
      */
     public function show(Teacher $teacher)
     {
-
-        $courses=$teacher->load('courses');
-        return $this->successResponse($courses,'courses !');
+        return $this->successResponse($this->teacherServices->getTeacherWithCourses($teacher),'courses !');
         }
 
     /**

@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Course\StoreCourseRequest;
 use App\Models\Course;
+use App\Services\Course\CourseServices;
+use App\Services\StudentServices;
 use Illuminate\Http\Request;
+use App\Http\Requests\Course\StoreCourseRequest;
+use App\Http\Requests\Student\SyncStudentRequest;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+        protected StudentServices $studentServices;
+        protected CourseServices $courseServices;
+        public function __construct(StudentServices $studentServices,CourseServices $courseServices){
+            $this->students=$studentServices;
+            $this->courseServices=$courseServices;
+        }
         public function index()
     {
         //
@@ -21,7 +28,8 @@ class CourseController extends Controller
      */
     public function store(StoreCourseRequest $request)
     {
-        $course=Course::create($request->validated());
+        $validatedData=$request->validated();
+        $course=$this->courseServices->addCourse($validatedData);
         return $this->successResponse($course,'course created successfully');
     }
 
@@ -30,7 +38,7 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        $studentsWithCourse=$course->load('students');
+        $studentsWithCourse=$this->courseServices->getCourse($course);
         return $this->successResponse($studentsWithCourse,'all student in the course');
     }
 
@@ -49,5 +57,9 @@ class CourseController extends Controller
     {
         //
     }
-   
+   public function syncStudents(SyncStudentRequest $request,Course $course){
+        $validate=$request->validated();
+        $updateCourse=$this->studentServices->syncStudentsToCourse($course,$validate['students']);
+        return $this->successResponse($updateCourse,'student synced successfully');
+    }
 }

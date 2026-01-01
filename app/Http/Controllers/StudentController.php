@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
 use App\Models\Student;
+use App\Services\StudentServices;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    protected StudentServices $studentServices;
+    public function __construct(StudentServices $studentServices){
+        $this->students=$studentServices;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $students=Student::query()->get();
-        return $this->successResponse($students,'All students');
+        return $this->successResponse($this->studentServices->getAllStudents(),'All students');
     }
 
     /**
@@ -48,12 +51,6 @@ class StudentController extends Controller
     {
         //
     }
-     public function syncStudents(Request $request,Course $course){
-        $validate=$request->validate([
-            'students'=>['required','array'],
-            'students.*'=>['integer','exists:students,id'],
-        ]);
-        $course->students()->sync($validate['students']);
-        return $this->successResponse($course->load('students'),'student synced successfully');
-    }
+
+
 }
